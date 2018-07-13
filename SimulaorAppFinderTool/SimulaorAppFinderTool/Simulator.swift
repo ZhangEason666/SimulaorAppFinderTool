@@ -8,7 +8,7 @@
 
 import Cocoa
 
-/// 最多展示5个模拟器
+/// 最多展示几个模拟器
 let k_z_max_simulators = 10//5
 
 class Simulator: NSObject {

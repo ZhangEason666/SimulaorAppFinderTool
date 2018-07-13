@@ -35,8 +35,9 @@ class AboutViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
      
-        self.view.addSubview(self.a_introduce_textField!)
-        
+        if let a_fieldView = self.a_introduce_textField {
+            self.view.addSubview(a_fieldView)
+        }
     
         
         
