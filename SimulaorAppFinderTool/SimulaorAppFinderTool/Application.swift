@@ -31,8 +31,10 @@ class Application: NSObject {
         self.bundleIdentifier = self.properties?["MCMMetadataIdentifier"] as? String
         self.isAppleApplication = self.bundleIdentifier?.hasPrefix("com.apple")
         
-        
-        self.buildMetadataForBundle(bundleId: self.bundleIdentifier!, rootPath: simulator.path!)
+        if let bundleIdentifier = self.bundleIdentifier,
+            let simulatorpath = simulator.path {
+            self.buildMetadataForBundle(bundleId: bundleIdentifier, rootPath: simulatorpath)
+        }
     }
     
     
@@ -174,13 +176,13 @@ class Application: NSObject {
         
         self.contentPath = self.applicationRootPathByUUID(uuid: uuid, rootPath: rootPath)
         
-        
         let applicationDataPropertiesPath = self.contentPath! + ".com.apple.mobile_container_manager.metadata.plist"
         
-        let result = NSDictionary(contentsOfFile: applicationDataPropertiesPath)
+        if let result = NSDictionary(contentsOfFile: applicationDataPropertiesPath) as? [String : AnyObject] {
+            return result
+        }
         
-        
-        return (result as! [String : AnyObject])
+        return [String: AnyObject]()
         
     }
     
