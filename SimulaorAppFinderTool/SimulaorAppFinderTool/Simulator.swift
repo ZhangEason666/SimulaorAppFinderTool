@@ -22,20 +22,20 @@ class Simulator: NSObject {
     
    
     
-    public class func z_simulatorWithDictionary(properties: [String: AnyObject], path: String) -> Simulator {
-        let a_simulator = Simulator(properties: properties, path: path)
+    public class func simulatorWithDictionary(properties: [String: AnyObject], path: String) -> Simulator {
+        let simulator = Simulator(properties: properties, path: path)
         
-        guard let a_attrs = try? FileManager.default.attributesOfItem(atPath: path) else {
-            return a_simulator
+        guard let attrs = try? FileManager.default.attributesOfItem(atPath: path) else {
+            return simulator
         }
         
-        guard let a_date = a_attrs[FileAttributeKey.modificationDate] as? Date else {
-            return a_simulator
+        guard let date = attrs[FileAttributeKey.modificationDate] as? Date else {
+            return simulator
         }
-        a_simulator.date = a_date
+        simulator.date = date
         
         
-        return a_simulator
+        return simulator
     }
     
     
@@ -47,30 +47,30 @@ class Simulator: NSObject {
         guard let properties = properties else { return }
         self.properties = properties
         
-        self.name = self.a_set_name()
-        self.os = self.a_set_os()
+        self.name = self.set_name()
+        self.os = self.set_os()
         self.path = path
     }
     
     
     //MARK: -- 设置name、os
-    fileprivate func a_set_name() -> String {
-        let a_name = (self.properties!["name"] as! String)
-        return a_name
+    fileprivate func set_name() -> String {
+        let name = (self.properties!["name"] as! String)
+        return name
     }
     
-    fileprivate func a_set_os() -> String {
-        var a_os_runtime = (self.properties!["runtime"] as! NSString).replacingOccurrences(of: "com.apple.CoreSimulator.SimRuntime", with: "")
+    fileprivate func set_os() -> String {
+        var os_runtime = (self.properties!["runtime"] as! NSString).replacingOccurrences(of: "com.apple.CoreSimulator.SimRuntime", with: "")
         
-        a_os_runtime = a_os_runtime.replacingOccurrences(of: "OS-", with: "OS")
-        a_os_runtime = a_os_runtime.replacingOccurrences(of: "-", with: ".")
+        os_runtime = os_runtime.replacingOccurrences(of: "OS-", with: "OS")
+        os_runtime = os_runtime.replacingOccurrences(of: "-", with: ".")
         
-        var a_temp_os = (a_os_runtime as NSString).replacingCharacters(in: NSMakeRange(0, 1), with: " ")
-        if (self.name?.contains(a_temp_os)) == true {
-            a_temp_os = ""
+        var temp_os = (os_runtime as NSString).replacingCharacters(in: NSMakeRange(0, 1), with: " ")
+        if (self.name?.contains(temp_os)) == true {
+            temp_os = ""
         }
         
-        return a_temp_os
+        return temp_os
         
     }
 

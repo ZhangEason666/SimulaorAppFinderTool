@@ -11,13 +11,13 @@ import Cocoa
 class Application: NSObject {
 
     
-    public class func z_applicationWithDictionary(dictionary: [String: AnyObject], simulator: Simulator) -> Application {
+    public class func applicationWithDictionary(dictionary: [String: AnyObject], simulator: Simulator) -> Application {
         
-        let a_appliation = Application(dictionary: dictionary, simulator: simulator)
+        let appliation = Application(dictionary: dictionary, simulator: simulator)
         
         
         
-        return a_appliation
+        return appliation
     }
     
     convenience init(dictionary: [String: AnyObject], simulator: Simulator) {
@@ -26,27 +26,27 @@ class Application: NSObject {
         
         self.uuid = dictionary[KEY_FILE] as? String
         
-        self.properties = self.a_getApplicationPropertiesByUUID(uuid: self.uuid!, rootPath: simulator.path!)
+        self.properties = self.getApplicationPropertiesByUUID(uuid: self.uuid!, rootPath: simulator.path!)
         
         self.bundleIdentifier = self.properties?["MCMMetadataIdentifier"] as? String
         self.isAppleApplication = self.bundleIdentifier?.hasPrefix("com.apple")
         
         
-        self.a_buildMetadataForBundle(bundleId: self.bundleIdentifier!, rootPath: simulator.path!)
+        self.buildMetadataForBundle(bundleId: self.bundleIdentifier!, rootPath: simulator.path!)
     }
     
     
-    fileprivate func a_buildMetadataForBundle(bundleId: String, rootPath: String) {
+    fileprivate func buildMetadataForBundle(bundleId: String, rootPath: String) {
         
-        let a_installedApplicationsBundlePath = rootPath + "data/Containers/Bundle/Application/"
+        let installedApplicationsBundlePath = rootPath + "data/Containers/Bundle/Application/"
         
         
-        let a_installedApplicationsBundle = CommonTools.z_getSortedFilesFromFolder(folderPath: a_installedApplicationsBundlePath)
+        let installedApplicationsBundle = CommonTools.getSortedFilesFromFolder(folderPath: installedApplicationsBundlePath)
         
        
-        self.a_processBundles(bundles: a_installedApplicationsBundle!, rootPath: rootPath, bundleId: bundleId) {[weak self] (applicationRootBundlePath) in
+        self.processBundles(bundles: installedApplicationsBundle!, rootPath: rootPath, bundleId: bundleId) {[weak self] (applicationRootBundlePath) in
             
-            let applicationFolderName = CommonTools.z_getApplicationFolderFromPath(folderPath: applicationRootBundlePath)
+            let applicationFolderName = CommonTools.getApplicationFolderFromPath(folderPath: applicationRootBundlePath)
             
             let applicationFolderPath = applicationRootBundlePath + applicationFolderName
             
@@ -67,17 +67,17 @@ class Application: NSObject {
                 applicationBundleName = applicationPlist["CFBundleDisplayName"] as? NSString
             }
             
-            let a_icon = self?.a_getIconForApplicationWithPlist(applicationPlist: applicationPlist, folderPath: applicationFolderPath)
+            let icon = self?.getIconForApplicationWithPlist(applicationPlist: applicationPlist, folderPath: applicationFolderPath)
             
             self?.bundleName = applicationBundleName! as String
             self?.version = applicationVersion
-            self?.icon = a_icon
+            self?.icon = icon
             
         }
     }
     
     
-    fileprivate func a_getIconForApplicationWithPlist(applicationPlist: [String: AnyObject], folderPath: String) -> NSImage {
+    fileprivate func getIconForApplicationWithPlist(applicationPlist: [String: AnyObject], folderPath: String) -> NSImage {
         
         var iconPath = ""
         var applicationIcon = applicationPlist["CFBundleIconFile"] as? String
@@ -130,26 +130,26 @@ class Application: NSObject {
         }
         
         
-        var a_icon: NSImage?
+        var icon: NSImage?
         if iconPath == "" {
-            a_icon = #imageLiteral(resourceName: "EmptyItemIcon")
+            icon = #imageLiteral(resourceName: "EmptyItemIcon")
         } else {
             
-            a_icon = NSImage(contentsOfFile: iconPath)
+            icon = NSImage(contentsOfFile: iconPath)
         }
         
         
-        a_icon = a_icon?.z_roundCorners(a_image: a_icon!, toSize: NSSize(width: 24, height: 24))
+        icon = icon?.roundCorners(image: icon!, toSize: NSSize(width: 24, height: 24))
         
-        return a_icon!
+        return icon!
     }
     
     
     
-    func a_processBundles(bundles: [[String: AnyObject]], rootPath: String, bundleId: String, finishBlock:(_ applicationRootBundlePath: String)->()) {
+    func processBundles(bundles: [[String: AnyObject]], rootPath: String, bundleId: String, finishBlock:(_ applicationRootBundlePath: String)->()) {
         
-        for a_dict in bundles {
-            let appBundleUUID = a_dict[KEY_FILE] as! String
+        for dict in bundles {
+            let appBundleUUID = dict[KEY_FILE] as! String
             let applicationRootBundlePath = rootPath + "data/Containers/Bundle/Application/" + appBundleUUID + "/"
             
             let applicationBundlePropertiesPath = applicationRootBundlePath + ".com.apple.mobile_container_manager.metadata.plist"
@@ -170,21 +170,21 @@ class Application: NSObject {
     
     
     
-    fileprivate func a_getApplicationPropertiesByUUID(uuid: String, rootPath: String) -> [String: AnyObject] {
+    fileprivate func getApplicationPropertiesByUUID(uuid: String, rootPath: String) -> [String: AnyObject] {
         
-        self.contentPath = self.a_applicationRootPathByUUID(uuid: uuid, rootPath: rootPath)
-        
-        
-        let a_applicationDataPropertiesPath = self.contentPath! + ".com.apple.mobile_container_manager.metadata.plist"
-        
-        let a_result = NSDictionary(contentsOfFile: a_applicationDataPropertiesPath)
+        self.contentPath = self.applicationRootPathByUUID(uuid: uuid, rootPath: rootPath)
         
         
-        return (a_result as! [String : AnyObject])
+        let applicationDataPropertiesPath = self.contentPath! + ".com.apple.mobile_container_manager.metadata.plist"
+        
+        let result = NSDictionary(contentsOfFile: applicationDataPropertiesPath)
+        
+        
+        return (result as! [String : AnyObject])
         
     }
     
-    fileprivate func a_applicationRootPathByUUID(uuid: String, rootPath: String) -> String {
+    fileprivate func applicationRootPathByUUID(uuid: String, rootPath: String) -> String {
         return rootPath + "data/Containers/Data/Application/" + uuid + "/";
     }
     

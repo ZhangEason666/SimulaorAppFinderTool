@@ -13,13 +13,13 @@ extension NSImage {
     
     
     /// 返回圆角
-    public func z_roundCorners(a_image: NSImage, toSize: NSSize) -> NSImage {
+    public func roundCorners(image: NSImage, toSize: NSSize) -> NSImage {
         
-        guard let a_existingImage = self.z_scaleImage(a_image: a_image, toSize: toSize) else {
+        guard let existingImg = self.scaleImage(image: image, toSize: toSize) else {
             
-            return a_image
+            return image
         }
-        let existingImage = a_existingImage
+        let existingImage = existingImg
         let existingSize = existingImage.size
         let newSize = NSMakeSize(existingSize.width, existingSize.height)
         
@@ -34,7 +34,7 @@ extension NSImage {
         clipPath.windingRule = .evenOddWindingRule
         clipPath.addClip()
         
-        a_existingImage.draw(at: NSPoint.zero, from: NSRect(x: 0, y: 0, width: newSize.width, height: newSize.height), operation: NSCompositingOperation.sourceOver, fraction: 1)
+        existingImage.draw(at: NSPoint.zero, from: NSRect(x: 0, y: 0, width: newSize.width, height: newSize.height), operation: NSCompositingOperation.sourceOver, fraction: 1)
         
         composedImage.unlockFocus()
         
@@ -42,8 +42,8 @@ extension NSImage {
     }
     
     /// 按照给定的size压缩图片
-    public func z_scaleImage(a_image: NSImage, toSize: NSSize) -> NSImage? {
-        let sourceImage = a_image
+    public func scaleImage(image: NSImage, toSize: NSSize) -> NSImage? {
+        let sourceImage = image
         
         if sourceImage.isValid == true {
             let smallImage = NSImage(size: toSize)

@@ -14,24 +14,24 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // 给Info.plist里添加 LSUIElement 值设为 1 可以让App运行的时候不在dock栏出现
     //--> Application is agent (UIElement) : Boolen : YES
     
-    fileprivate lazy var a_statusItem: NSStatusItem = {
-        let a_statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+    fileprivate lazy var statusItem: NSStatusItem = {
+        let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
         
-        a_statusItem.image = NSImage(named: NSImage.Name(rawValue: "BarIcon"))
-        a_statusItem.highlightMode = true
-        a_statusItem.isEnabled = true
+        statusItem.image = NSImage(named: NSImage.Name(rawValue: "BarIcon"))
+        statusItem.highlightMode = true
+        statusItem.isEnabled = true
         
-        return a_statusItem
+        return statusItem
     }()
     
     /// 盛放的window
     fileprivate var mainWindow: NSWindow?
     /// aboutvc
-    fileprivate var a_aboutVC: AboutViewController?
+    fileprivate var aboutVC: AboutViewController?
     
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        self.a_statusItem.action = #selector(a_presentApplicationMenuAction)
+        self.statusItem.action = #selector(presentApplicationMenuAction)
         
         NSEvent.addLocalMonitorForEvents(matching: NSEvent.EventTypeMask.keyDown, handler: keyDown)
     }
@@ -59,130 +59,130 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 /// Menu拓展
 extension AppDelegate {
     
-    @objc fileprivate func a_presentApplicationMenuAction() {
+    @objc fileprivate func presentApplicationMenuAction() {
         
-        let a_menu = NSMenu()
+        let menu = NSMenu()
         
         /// 3 添加子模块
         // 3.1 获取模拟器信息
-        let a_simulators = self.a_activeSimulators()
+        let simulators = self.activeSimulators()
         
         
-        for (a_index, a_simulator) in a_simulators.enumerated() {
+        for (index, simulator) in simulators.enumerated() {
             
             //MARK: ----  模拟器个数  k_z_max_simulators
-            if a_index > k_z_max_simulators {
+            if index > k_z_max_simulators {
                 break
             }
-            a_menu.addItem(NSMenuItem.separator())
-            if let a_installedApplications = self.a_installedAppsOnSimulator(a_simulator: a_simulator) {
-                let a_simulator_title = (a_simulator.name ?? "name") + (a_simulator.os ?? "os")
+            menu.addItem(NSMenuItem.separator())
+            if let installedApplications = self.installedAppsOnSimulator(simulator: simulator) {
+                let simulator_title = (simulator.name ?? "name") + (simulator.os ?? "os")
                 /// title: 标题； acton: 执行的方法，如果nil 则title为灰色；keyEquivalent: 快捷键
-                let a_simulatorMenuItem = NSMenuItem(title: a_simulator_title, action: nil, keyEquivalent: "")
-                a_simulatorMenuItem.isEnabled = false
-                a_menu.addItem(a_simulatorMenuItem)
-                self.a_addApplications(applications: a_installedApplications, toMenu: a_menu)
+                let simulatorMenuItem = NSMenuItem(title: simulator_title, action: nil, keyEquivalent: "")
+                simulatorMenuItem.isEnabled = false
+                menu.addItem(simulatorMenuItem)
+                self.addApplications(applications: installedApplications, toMenu: menu)
             }
         }
         
-        a_menu.addItem(NSMenuItem.separator())
+        menu.addItem(NSMenuItem.separator())
         //MARK: 3.4 添加底部服务区的全局事件
-        self.a_addServiceItemsToMenu(menu: a_menu)
-        self.a_statusItem.popUpMenu(a_menu)
+        self.addServiceItemsToMenu(menu: menu)
+        self.statusItem.popUpMenu(menu)
     }
     
     
     //MARK: --- 3.1  获取模拟器信息
-    fileprivate func a_activeSimulators() -> [Simulator] {
-        let a_simulatorPaths = CommonTools.z_simulatorPaths()
+    fileprivate func activeSimulators() -> [Simulator] {
+        let simulatorPaths = CommonTools.simulatorPaths()
         
-        var a_activeSimulators = [Simulator]()
+        var activeSimulators = [Simulator]()
         
-        for a_path in a_simulatorPaths {
-            let a_simulatorDetailsPath = (a_path as NSString).appending("device.plist")
-            guard let a_properties = (NSDictionary(contentsOfFile: a_simulatorDetailsPath)) as? [String : AnyObject] else {
+        for path in simulatorPaths {
+            let simulatorDetailsPath = (path as NSString).appending("device.plist")
+            guard let properties = (NSDictionary(contentsOfFile: simulatorDetailsPath)) as? [String : AnyObject] else {
                 continue
             }
             
-            let a_simulator = Simulator.z_simulatorWithDictionary(properties: a_properties, path: a_path)
+            let simulator = Simulator.simulatorWithDictionary(properties: properties, path: path)
             
-            a_activeSimulators.append(a_simulator)
+            activeSimulators.append(simulator)
             
         }
         
         
         // 3.2 最近使用的时间排序
-        let a_tempSimulators = a_activeSimulators.sorted(by: { (sim1, sim2) -> Bool in
-            let a_sim1_date = (sim1.date ?? Date())
-            let a_sim2_date = (sim2.date ?? Date())
-            let a_result = (a_sim1_date.compare(a_sim2_date))
-            return (a_result.rawValue > 0)
+        let tempSimulators = activeSimulators.sorted(by: { (sim1, sim2) -> Bool in
+            let sim1_date = (sim1.date ?? Date())
+            let sim2_date = (sim2.date ?? Date())
+            let result = (sim1_date.compare(sim2_date))
+            return (result.rawValue > 0)
             
         })
         
         
         
-        return a_tempSimulators
+        return tempSimulators
     }
     
     //MARK: --- 3.2 获取安装的app
-    func a_installedAppsOnSimulator(a_simulator: Simulator) -> [Application]? {
-        guard let a_path = a_simulator.path else { return nil }
+    func installedAppsOnSimulator(simulator: Simulator) -> [Application]? {
+        guard let path = simulator.path else { return nil }
         
-        let a_installedApplicationsDataPath = a_path + "data/Containers/Data/Application/"
+        let installedApplicationsDataPath = path + "data/Containers/Data/Application/"
         
-        guard let a_installedApplications = CommonTools.z_getSortedFilesFromFolder(folderPath: a_installedApplicationsDataPath) else {
+        guard let installedApplications = CommonTools.getSortedFilesFromFolder(folderPath: installedApplicationsDataPath) else {
             return nil
         }
         
-        var a_userApplications = [Application]()
+        var userApplications = [Application]()
         
         
-        for a_appDict in a_installedApplications {
-            let a_app = Application(dictionary: a_appDict, simulator: a_simulator)
-            if a_app.isAppleApplication == false {
-                a_userApplications.append(a_app)
+        for appDict in installedApplications {
+            let app = Application(dictionary: appDict, simulator: simulator)
+            if app.isAppleApplication == false {
+                userApplications.append(app)
             }
         }
         
         
-        return a_userApplications
+        return userApplications
         
     }
     
     //MARK: --- 3.3 添加到menu上
-    fileprivate func a_addApplications(applications: [Application], toMenu: NSMenu) {
+    fileprivate func addApplications(applications: [Application], toMenu: NSMenu) {
         
-        for a_application in applications {
+        for application in applications {
             
-            self.a_addApplication(application: a_application, toMenu: toMenu)
+            self.addApplication(application: application, toMenu: toMenu)
             
         }
         
         
     }
     //MARK: --- 3.3.1 添加到menu上
-    fileprivate func a_addApplication(application: Application, toMenu: NSMenu) {
-        let a_title = (application.bundleName ?? "App") + " (v" + (application.version ?? "1.0") + ")"
+    fileprivate func addApplication(application: Application, toMenu: NSMenu) {
+        let title = (application.bundleName ?? "App") + " (v" + (application.version ?? "1.0") + ")"
         
         if let applicationContentPath = application.contentPath {
             
-            let a_item = NSMenuItem(title: a_title, action: #selector(a_openInWithModifier(sender:)), keyEquivalent:"")
+            let item = NSMenuItem(title: title, action: #selector(openInWithModifier(sender:)), keyEquivalent:"")
             
-            a_item.representedObject = applicationContentPath
-            a_item.image = application.icon
+            item.representedObject = applicationContentPath
+            item.image = application.icon
             
-            self.a_addSubMenusToItem(a_item: a_item, usingPath: applicationContentPath)
+            self.addSubMenusToItem(item: item, usingPath: applicationContentPath)
             
-            toMenu.addItem(a_item)
+            toMenu.addItem(item)
         }
     }
     
     
     //MARK: 3.4 添加底部服务区的全局事件
-    fileprivate func a_addServiceItemsToMenu(menu: NSMenu) {
-        let startAtLogin = NSMenuItem(title: "开机启动", action: #selector(a_handleStartAtLogin(sender:)), keyEquivalent: "")
-        let isStartAtLoginEnabled = CommonTools.z_startAtLoginEnabled()
+    fileprivate func addServiceItemsToMenu(menu: NSMenu) {
+        let startAtLogin = NSMenuItem(title: "开机启动", action: #selector(handleStartAtLogin(sender:)), keyEquivalent: "")
+        let isStartAtLoginEnabled = CommonTools.startAtLoginEnabled()
         if (isStartAtLoginEnabled == true) {
             startAtLogin.state = .on
         } else {
@@ -190,56 +190,56 @@ extension AppDelegate {
         }
         startAtLogin.representedObject = isStartAtLoginEnabled
         menu.addItem(startAtLogin)
-        var a_version_str = ""
+        var version_str = ""
         if let version_str = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String {
             
         }
         var appVersion_str = "关于 "
-        if let a_locaized = NSRunningApplication.current.localizedName {
-            appVersion_str = "\(appVersion_str)  \(a_version_str)  \(a_version_str) "
+        if let locaized = NSRunningApplication.current.localizedName {
+            appVersion_str = "\(appVersion_str)  \(version_str)  \(version_str) "
         }
         
-        let about_item = NSMenuItem(title: appVersion_str, action: #selector(a_aboutApp(sender:)), keyEquivalent: "I")
+        let about_item = NSMenuItem(title: appVersion_str, action: #selector(aboutApp(sender:)), keyEquivalent: "I")
         menu.addItem(about_item)
         
-        let quit_item = NSMenuItem(title: "退出", action: #selector(a_exitApp(sender:)), keyEquivalent: "Q")
+        let quit_item = NSMenuItem(title: "退出", action: #selector(exitApp(sender:)), keyEquivalent: "Q")
         menu.addItem(quit_item)
         
     }
     
     /// 关于
-    @objc fileprivate func a_aboutApp(sender: NSMenuItem) {
+    @objc fileprivate func aboutApp(sender: NSMenuItem) {
         
         //        NSWorkspace.shared.open(URL(string: "https://github.com/")!)
-        if (self.a_aboutVC != nil && self.mainWindow != nil) {
+        if (self.aboutVC != nil && self.mainWindow != nil) {
             /// 将当前 app 的 window 放到最前面
             NSApp.activate(ignoringOtherApps: true)
             return}
-        let a_about = AboutViewController()
-        self.a_aboutVC = a_about
-        let a_mainWindow = NSWindow(contentViewController: a_about)
+        let about = AboutViewController()
+        self.aboutVC = about
+        let mainWindow = NSWindow(contentViewController: about)
         
-        a_mainWindow.delegate = self
-        a_mainWindow.titlebarAppearsTransparent = true
-        a_mainWindow.titleVisibility = .hidden
-        //        a_mainWindow.styleMask = [.fullSizeContentView,
+        mainWindow.delegate = self
+        mainWindow.titlebarAppearsTransparent = true
+        mainWindow.titleVisibility = .hidden
+        //        mainWindow.styleMask = [.fullSizeContentView,
         //                                      .titled,
         //                                      .resizable,
         //                                      .miniaturizable,
         //                                      .closable]
-        a_mainWindow.styleMask = [.titled,.closable]
-        a_mainWindow.isMovableByWindowBackground = true
-        a_mainWindow.backgroundColor = NSColor.white
+        mainWindow.styleMask = [.titled,.closable]
+        mainWindow.isMovableByWindowBackground = true
+        mainWindow.backgroundColor = NSColor.white
         
-        self.a_updateTitleBarOfWindow(window: a_mainWindow, fullScreen: false)
+        self.updateTitleBarOfWindow(window: mainWindow, fullScreen: false)
         
         NSApp.activate(ignoringOtherApps: true)
-        a_mainWindow.makeKeyAndOrderFront(self)
-        self.mainWindow = a_mainWindow
+        mainWindow.makeKeyAndOrderFront(self)
+        self.mainWindow = mainWindow
         
     }
     
-    fileprivate func a_dealClose() {
+    fileprivate func dealClose() {
         /// 关闭window的
         self.mainWindow?.performClose(nil)
     }
@@ -247,22 +247,22 @@ extension AppDelegate {
     
     
     /// 退出登录
-    @objc fileprivate func a_exitApp(sender: NSMenuItem) {
+    @objc fileprivate func exitApp(sender: NSMenuItem) {
         
         NSApplication.shared.terminate(self)
     }
     
     
     /// 开机启动
-    @objc fileprivate func a_handleStartAtLogin(sender: NSMenuItem) {
+    @objc fileprivate func handleStartAtLogin(sender: NSMenuItem) {
         
-        if let a_isEnabled = sender.representedObject as? Bool {
+        if let isEnabled = sender.representedObject as? Bool {
             
-            CommonTools().z_setStartAtLoginEnabled(enabled: !a_isEnabled)
+            CommonTools().setStartAtLoginEnabled(enabled: !isEnabled)
             
             
-            sender.representedObject = !a_isEnabled
-            if a_isEnabled == true {
+            sender.representedObject = !isEnabled
+            if isEnabled == true {
                 sender.state = .on
             } else {
                 sender.state = .off
@@ -275,76 +275,76 @@ extension AppDelegate {
     
     
     /// 3.1.1.1 打开指定item
-    @objc fileprivate func a_openInWithModifier(sender: NSMenuItem) {
+    @objc fileprivate func openInWithModifier(sender: NSMenuItem) {
         let event = NSApp.currentEvent
         
         if ((event?.modifierFlags) != nil) && (event?.modifierFlags == NSEvent.ModifierFlags.option) {
-            self.a_openInTerminal(sender: sender)
+            self.openInTerminal(sender: sender)
         } else if ((event?.modifierFlags) != nil) && (event?.modifierFlags == NSEvent.ModifierFlags.control) {
             
         } else {
-            self.a_openInFinder(sender: sender)
+            self.openInFinder(sender: sender)
         }
         
         
     }
     
     /// 用终端代开
-    @objc fileprivate func a_openInTerminal(sender: NSMenuItem) {
-        guard let a_path = sender.representedObject as? String else {
+    @objc fileprivate func openInTerminal(sender: NSMenuItem) {
+        guard let path = sender.representedObject as? String else {
             return
         }
         
-        NSWorkspace.shared.openFile(a_path, withApplication: "Terminal")
+        NSWorkspace.shared.openFile(path, withApplication: "Terminal")
         
     }
     
-    @objc fileprivate func a_openIniTerm(sender: NSMenuItem) {
-        guard let a_path = sender.representedObject as? String else {
+    @objc fileprivate func openIniTerm(sender: NSMenuItem) {
+        guard let path = sender.representedObject as? String else {
             return
         }
         
-        NSWorkspace.shared.openFile(a_path, withApplication: "iTerm")
+        NSWorkspace.shared.openFile(path, withApplication: "iTerm")
         
     }
     
     /// 用Finder打开指定文件夹
-    @objc fileprivate func a_openInFinder(sender: NSMenuItem) {
-        guard let a_path = sender.representedObject as? String else {
+    @objc fileprivate func openInFinder(sender: NSMenuItem) {
+        guard let path = sender.representedObject as? String else {
             return
         }
         /// 打开Documents
-        let a_docPath = a_path + "Documents"
-        NSWorkspace.shared.openFile(a_docPath, withApplication: "Finder")
+        let docPath = path + "Documents"
+        NSWorkspace.shared.openFile(docPath, withApplication: "Finder")
     }
     
     ///
-    @objc fileprivate func a_copyToPasteboard(sender: NSMenuItem) {
-        guard let a_path = sender.representedObject as? String else {
+    @objc fileprivate func copyToPasteboard(sender: NSMenuItem) {
+        guard let path = sender.representedObject as? String else {
             return
         }
         
-        let a_pasteboard = NSPasteboard.general
-        a_pasteboard.declareTypes([NSPasteboard.PasteboardType.string], owner: nil)
-        a_pasteboard.setString(a_path, forType: NSPasteboard.PasteboardType.string)
+        let pasteboard = NSPasteboard.general
+        pasteboard.declareTypes([NSPasteboard.PasteboardType.string], owner: nil)
+        pasteboard.setString(path, forType: NSPasteboard.PasteboardType.string)
     }
     
     /// 是否有模拟器在运行
-    fileprivate func a_simulatorRunning() -> Bool {
+    fileprivate func simulatorRunning() -> Bool {
         guard let windows = CGWindowListCopyWindowInfo(CGWindowListOption.excludeDesktopElements, kCGNullWindowID) as? [[String: AnyObject]] else {
             return false
         }
         
-        for a_window in windows {
-            guard let windowOwner = a_window[kCGWindowOwnerName as String] as? String,
-                let windowName = a_window[kCGWindowName as String] as? String else {
+        for window in windows {
+            guard let windowOwner = window[kCGWindowOwnerName as String] as? String,
+                let windowName = window[kCGWindowName as String] as? String else {
                     return false
             }
             
-            let a_ownercontains_Simulator = windowOwner.contains("Simulator")
-            let a_name_contains_iOS_watchOS_tvOS = (windowName.contains("iOS") || windowName.contains("watchOS") || windowName.contains("tvOS"))
+            let ownercontains_Simulator = windowOwner.contains("Simulator")
+            let name_contains_iOS_watchOS_tvOS = (windowName.contains("iOS") || windowName.contains("watchOS") || windowName.contains("tvOS"))
             
-            if a_ownercontains_Simulator && a_name_contains_iOS_watchOS_tvOS {
+            if ownercontains_Simulator && name_contains_iOS_watchOS_tvOS {
                 return true
             }
             
@@ -355,23 +355,23 @@ extension AppDelegate {
     }
     
     /// 屏幕截图
-    @objc fileprivate func a_takeScreenshot(sender: NSMenuItem) {
+    @objc fileprivate func takeScreenshot(sender: NSMenuItem) {
         
-        CommonTools.z_takeScreenshot()
+        CommonTools.takeScreenshot()
         
     }
     ///
-    @objc fileprivate func a_resetApplication(sender: NSMenuItem) {
-        guard let a_path = sender.representedObject as? String else {
+    @objc fileprivate func resetApplication(sender: NSMenuItem) {
+        guard let path = sender.representedObject as? String else {
             return
         }
-        self.a_resetFolder(folder: "Documents", root: a_path)
-        self.a_resetFolder(folder: "Library", root: a_path)
-        self.a_resetFolder(folder: "tmp", root: a_path)
+        self.resetFolder(folder: "Documents", root: path)
+        self.resetFolder(folder: "Library", root: path)
+        self.resetFolder(folder: "tmp", root: path)
     }
     
     
-    fileprivate func a_resetFolder(folder: String, root: String) {
+    fileprivate func resetFolder(folder: String, root: String) {
         
         let path = (root as NSString).appendingPathComponent(folder)
         let fm = FileManager.default
@@ -379,24 +379,24 @@ extension AppDelegate {
         let en = fm.enumerator(atPath: path)
         
         while let file = en?.nextObject()  {
-            if let a_file = file as? String {
-                let a_path = (path as NSString).appendingPathComponent(a_file)
+            if let file = file as? String {
+                let path = (path as NSString).appendingPathComponent(file)
                 
-                try? fm.removeItem(atPath: a_path)
+                try? fm.removeItem(atPath: path)
             }
         }
         
     }
     
     /// 3.1.2 继续添加item
-    fileprivate func a_addSubMenusToItem(a_item: NSMenuItem, usingPath: String)  {
+    fileprivate func addSubMenusToItem(item: NSMenuItem, usingPath: String)  {
         var icon: NSImage?
         
         let subMenu = NSMenu()
         
         var hotkey: Int = 1
         
-        let finder_item = NSMenuItem(title: "Finder", action: #selector(a_openInFinder(sender:)), keyEquivalent: "\(hotkey)")
+        let finder_item = NSMenuItem(title: "Finder", action: #selector(openInFinder(sender:)), keyEquivalent: "\(hotkey)")
         
         finder_item.representedObject = usingPath
         
@@ -408,7 +408,7 @@ extension AppDelegate {
         
         hotkey = hotkey + 1
         
-        let terminal_item = NSMenuItem(title: "Terminal", action: #selector(a_openInTerminal(sender:)), keyEquivalent: "\(hotkey)")
+        let terminal_item = NSMenuItem(title: "Terminal", action: #selector(openInTerminal(sender:)), keyEquivalent: "\(hotkey)")
         terminal_item.representedObject = usingPath
         
         icon = NSWorkspace.shared.icon(forFile: TERMINAL_ICON_PATH)
@@ -423,7 +423,7 @@ extension AppDelegate {
             return }
         if let _ = LSCopyApplicationURLsForBundleIdentifier(iTermBundleID, nil) {
             
-            let iTerm = NSMenuItem(title: "iTerm", action: #selector(a_openIniTerm(sender:)), keyEquivalent: "\(hotkey)")
+            let iTerm = NSMenuItem(title: "iTerm", action: #selector(openIniTerm(sender:)), keyEquivalent: "\(hotkey)")
             iTerm.representedObject = usingPath
             
             icon = NSWorkspace.shared.icon(forFile: ITERM_ICON_PATH)
@@ -439,15 +439,15 @@ extension AppDelegate {
         
         subMenu.addItem(NSMenuItem.separator())
         
-        let pasteboard_item = NSMenuItem(title: "Copy path to Clipboard", action: #selector(a_copyToPasteboard(sender:)), keyEquivalent: "\(hotkey)")
+        let pasteboard_item = NSMenuItem(title: "Copy path to Clipboard", action: #selector(copyToPasteboard(sender:)), keyEquivalent: "\(hotkey)")
         
         pasteboard_item.representedObject = usingPath
         subMenu.addItem(pasteboard_item)
         
         hotkey = hotkey + 1
         
-        if self.a_simulatorRunning() == true {
-            let screenshot_item = NSMenuItem(title: "Copy path to Clipboard", action: #selector(a_takeScreenshot(sender:)), keyEquivalent: "\(hotkey)")
+        if self.simulatorRunning() == true {
+            let screenshot_item = NSMenuItem(title: "Copy path to Clipboard", action: #selector(takeScreenshot(sender:)), keyEquivalent: "\(hotkey)")
             
             screenshot_item.representedObject = usingPath
             subMenu.addItem(screenshot_item)
@@ -456,7 +456,7 @@ extension AppDelegate {
             
         }
         
-        let resetApplication_item = NSMenuItem(title: "Reset application data", action: #selector(a_resetApplication(sender:)), keyEquivalent: "\(hotkey)")
+        let resetApplication_item = NSMenuItem(title: "Reset application data", action: #selector(resetApplication(sender:)), keyEquivalent: "\(hotkey)")
         
         resetApplication_item.representedObject = usingPath
         subMenu.addItem(resetApplication_item)
@@ -494,9 +494,9 @@ extension AppDelegate {
 /// titlebar设置,并 window 代理
 extension AppDelegate: NSWindowDelegate {
     /// 关闭Window的事件
-    fileprivate func a_closeWindowAction() {
-        if self.mainWindow != nil && self.a_aboutVC != nil {
-            self.a_aboutVC = nil
+    fileprivate func closeWindowAction() {
+        if self.mainWindow != nil && self.aboutVC != nil {
+            self.aboutVC = nil
             self.mainWindow = nil
         }
     }
@@ -506,34 +506,34 @@ extension AppDelegate: NSWindowDelegate {
         return true
     }
     func windowWillClose(_ notification: Notification) {
-        self.a_closeWindowAction()
+        self.closeWindowAction()
         
         //        debugPrint("------->")
     }
     
     ///
-    fileprivate func a_updateTitleBarOfWindow(window: NSWindow ,fullScreen: Bool) {
+    fileprivate func updateTitleBarOfWindow(window: NSWindow ,fullScreen: Bool) {
         let kTitlebarHeight: CGFloat = 24.0
 //        let kFullScreenButtonYOrigin: CGFloat = 3.0
         let windowFrame = window.frame
         let titlebarContainerView = window.standardWindowButton(.closeButton)?.superview?.superview;
         
         if let titlebarContainerFrame = titlebarContainerView?.frame {
-            var a_titlebarContainerFrame = titlebarContainerFrame
-            a_titlebarContainerFrame.origin.y = windowFrame.size.height - kTitlebarHeight
-            a_titlebarContainerFrame.size.height = CGFloat(kTitlebarHeight)
-            a_titlebarContainerFrame.size.width = 80.0
-            titlebarContainerView?.frame = a_titlebarContainerFrame
+            var titlebarContainerFrame = titlebarContainerFrame
+            titlebarContainerFrame.origin.y = windowFrame.size.height - kTitlebarHeight
+            titlebarContainerFrame.size.height = CGFloat(kTitlebarHeight)
+            titlebarContainerFrame.size.width = 80.0
+            titlebarContainerView?.frame = titlebarContainerFrame
         }
         
         let buttonX:CGFloat = 6.0
         let closeButton = window.standardWindowButton(.closeButton)
         if let temp_rect = closeButton?.frame {
-            var a_temp_rect = temp_rect
-            if let a_size = (closeButton?.frame.size) {
-                a_temp_rect.size = a_size
-                a_temp_rect.origin = CGPoint(x: buttonX, y: round((kTitlebarHeight - temp_rect.height)/2.0))
-                closeButton?.frame = a_temp_rect
+            var temp_rect = temp_rect
+            if let size = (closeButton?.frame.size) {
+                temp_rect.size = size
+                temp_rect.origin = CGPoint(x: buttonX, y: round((kTitlebarHeight - temp_rect.height)/2.0))
+                closeButton?.frame = temp_rect
             }
         }
         

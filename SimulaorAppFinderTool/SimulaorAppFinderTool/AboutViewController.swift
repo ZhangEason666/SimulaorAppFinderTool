@@ -11,19 +11,19 @@ import Cocoa
 class AboutViewController: NSViewController {
     
     /// 介绍文本
-    fileprivate lazy var a_introduce_textField: NSTextField? = {
-        let a_introduce_textField = NSTextField()
+    fileprivate lazy var introduce_textField: NSTextField? = {
+        let introduce_textField = NSTextField()
         
-        a_introduce_textField.stringValue = "打开最近使用的模拟器文件夹\n默认打开到Documents\n这是第一版"
-        a_introduce_textField.isEditable = false
-        a_introduce_textField.alignment = NSTextAlignment.center
+        introduce_textField.stringValue = "打开最近使用的模拟器文件夹\n默认打开到Documents\n这是第一版"
+        introduce_textField.isEditable = false
+        introduce_textField.alignment = NSTextAlignment.center
         
-        a_introduce_textField.frame = NSRect(x: 0, y: self.view.bounds.height/4, width: self.view.bounds.width, height: self.view.bounds.height/2)
+        introduce_textField.frame = NSRect(x: 0, y: self.view.bounds.height/4, width: self.view.bounds.width, height: self.view.bounds.height/2)
         
         /// 边框线 是否有
-        a_introduce_textField.isBordered = false
+        introduce_textField.isBordered = false
         
-        return a_introduce_textField
+        return introduce_textField
     }()
     
     override func loadView() {
@@ -35,8 +35,8 @@ class AboutViewController: NSViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
      
-        if let a_fieldView = self.a_introduce_textField {
-            self.view.addSubview(a_fieldView)
+        if let fieldView = self.introduce_textField {
+            self.view.addSubview(fieldView)
         }
     
         
