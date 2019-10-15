@@ -190,52 +190,28 @@ extension AppDelegate {
         }
         startAtLogin.representedObject = isStartAtLoginEnabled
         menu.addItem(startAtLogin)
-        var version_str = ""
-        if let version_str = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String {
-            
-        }
-        var appVersion_str = "关于 "
-        if let locaized = NSRunningApplication.current.localizedName {
-            appVersion_str = "\(appVersion_str)  \(version_str)  \(version_str) "
-        }
         
-        let about_item = NSMenuItem(title: appVersion_str, action: #selector(aboutApp(sender:)), keyEquivalent: "I")
-        menu.addItem(about_item)
+        let clear_item = NSMenuItem(title: "清理Xcode缓存", action: #selector(clearXcodeCache(sender:)), keyEquivalent: "C")
+        menu.addItem(clear_item)
         
         let quit_item = NSMenuItem(title: "退出", action: #selector(exitApp(sender:)), keyEquivalent: "Q")
         menu.addItem(quit_item)
         
     }
     
-    /// 关于
-    @objc fileprivate func aboutApp(sender: NSMenuItem) {
-        
-        //        NSWorkspace.shared.open(URL(string: "https://github.com/")!)
-        if (self.aboutVC != nil && self.mainWindow != nil) {
-            /// 将当前 app 的 window 放到最前面
-            NSApp.activate(ignoringOtherApps: true)
-            return}
-        let about = AboutViewController()
-        self.aboutVC = about
-        let mainWindow = NSWindow(contentViewController: about)
-        
-        mainWindow.delegate = self
-        mainWindow.titlebarAppearsTransparent = true
-        mainWindow.titleVisibility = .hidden
-        //        mainWindow.styleMask = [.fullSizeContentView,
-        //                                      .titled,
-        //                                      .resizable,
-        //                                      .miniaturizable,
-        //                                      .closable]
-        mainWindow.styleMask = [.titled,.closable]
-        mainWindow.isMovableByWindowBackground = true
-        mainWindow.backgroundColor = NSColor.white
-        
-        self.updateTitleBarOfWindow(window: mainWindow, fullScreen: false)
-        
-        NSApp.activate(ignoringOtherApps: true)
-        mainWindow.makeKeyAndOrderFront(self)
-        self.mainWindow = mainWindow
+    /// 清理Xcode缓存
+    @objc fileprivate func clearXcodeCache(sender: NSMenuItem) {
+        let cachePath = "~/Library/Developer/Xcode"
+        let openScriptString = String(format: "do shell script \"open %@\"", cachePath)
+        if let openObject = NSAppleScript(source: openScriptString) {
+            var error: NSDictionary?
+            let descriptor = openObject.executeAndReturnError(&error)
+            if 0 != descriptor.description.lengthOfBytes(using: .utf8) {
+                debugPrint("打开成功")
+            } else {
+                debugPrint("打开失败")
+            }
+        }
         
     }
     
