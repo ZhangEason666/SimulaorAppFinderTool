@@ -194,6 +194,10 @@ extension AppDelegate {
         let clear_item = NSMenuItem(title: "清理Xcode缓存", action: #selector(clearXcodeCache(sender:)), keyEquivalent: "C")
         menu.addItem(clear_item)
         
+        
+        let snippet_item = NSMenuItem(title: "code snippet", action: #selector(codeSnippet(sender:)), keyEquivalent: "O")
+        menu.addItem(snippet_item)
+        
         let quit_item = NSMenuItem(title: "退出", action: #selector(exitApp(sender:)), keyEquivalent: "Q")
         menu.addItem(quit_item)
         
@@ -201,8 +205,19 @@ extension AppDelegate {
     
     /// 清理Xcode缓存
     @objc fileprivate func clearXcodeCache(sender: NSMenuItem) {
-        let cachePath = "~/Library/Developer/Xcode"
-        let openScriptString = String(format: "do shell script \"open %@\"", cachePath)
+        let cachePath = "~/Library/Developer/Xcode/DerivedData"
+        self.openSysFolder(path: cachePath)
+    }
+    
+    /// 打开Xcode自定义语法块
+    @objc fileprivate func codeSnippet(sender: NSMenuItem) {
+        let snippetPath = "~/Library/Developer/Xcode/UserData/CodeSnippets"
+        self.openSysFolder(path: snippetPath)
+    }
+
+    /// 打开指定文件夹
+    private func openSysFolder(path: String) {
+        let openScriptString = String(format: "do shell script \"open %@\"", path)
         if let openObject = NSAppleScript(source: openScriptString) {
             var error: NSDictionary?
             let descriptor = openObject.executeAndReturnError(&error)
@@ -212,8 +227,8 @@ extension AppDelegate {
                 debugPrint("打开失败")
             }
         }
-        
     }
+    
     
     fileprivate func dealClose() {
         /// 关闭window的

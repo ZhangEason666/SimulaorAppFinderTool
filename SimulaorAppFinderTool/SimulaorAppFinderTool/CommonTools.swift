@@ -59,14 +59,13 @@ class CommonTools: NSObject {
             let loginItemsArray = loginItemsArrays as! [LSSharedFileListItem]
         
             for item in loginItemsArray {
-                url = LSSharedFileListItemCopyResolvedURL(item, 0, nil).takeUnretainedValue()
-                
-                let urlPath = (url as NSURL).path
-                
-                if urlPath?.compare(appPath) == ComparisonResult.orderedSame {
-                    LSSharedFileListItemRemove(loginItems, item)
+                if let uuurl = LSSharedFileListItemCopyResolvedURL(item, 0, nil) {
+                    url = uuurl.takeUnretainedValue()
+                    let urlPath = (url as NSURL).path
+                    if urlPath?.compare(appPath) == ComparisonResult.orderedSame {
+                        LSSharedFileListItemRemove(loginItems, item)
+                    }
                 }
-                
             }
         }
         
@@ -79,7 +78,6 @@ class CommonTools: NSObject {
         
         var url = NSURL(fileURLWithPath: appPath)
         
-        //FIXME: -- 这里只能取到 iTunesHelper.app ??
         guard let loginIs = LSSharedFileListCreate(nil, (kLSSharedFileListSessionLoginItems.takeUnretainedValue()) , nil) else {
             return false
         }
@@ -93,14 +91,13 @@ class CommonTools: NSObject {
         let loginItemsArray = loginItemsArrays as! [LSSharedFileListItem]
         
         for item in loginItemsArray {
-            url = LSSharedFileListItemCopyResolvedURL(item, 0, nil).takeUnretainedValue()
-            
-            let urlPath = (url as NSURL).path
-            
-            if urlPath?.compare(appPath) == ComparisonResult.orderedSame {
-                result = true
+            if let uuurl = LSSharedFileListItemCopyResolvedURL(item, 0, nil) {
+                url = uuurl.takeUnretainedValue()
+                let urlPath = (url as NSURL).path
+                if urlPath?.compare(appPath) == ComparisonResult.orderedSame {
+                    result = true
+                }
             }
-            
         }
         
         return result
